@@ -1,44 +1,50 @@
 import express from "express";
-import z from "zod";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "./utils/config";
 import { middleware } from "./middleware";
+import { JWT_SECRET } from "@repo/backend-common/config";
+import { CreateUserSchema, SigninSchema } from "@repo/common/types";
 
 const app = express();
-
-export const userInterface = z.object({
-    email: z.string({required_error: "Email field is requireed."}).email(),
-    password: z.string({required_error: "Password field is required."}).min(6),
-})
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
 app.post("/signup", (req, res) => {
-    const {success, data} = userInterface.safeParse(req.body);
+    const {success, data} = CreateUserSchema.safeParse(req.body);
     
     if(!success) {
         res.status(400).json({error: data, msg: "Invalid input"});
+        return;
     }
 
     console.log(data);
 });
 
 app.post("/signin", (req, res) => {
-    const {success, data} = userInterface.safeParse(req.body);
+    const {success, data} = SigninSchema.safeParse(req.body);
     
     if(!success) {
         res.status(400).json({error: data, msg: "Invalid input"});
+        return;
     }
 
-    const token = jwt.sign({email: data?.email, id: 1}, JWT_SECRET);
+    const token = jwt.sign({username: data?.username, id: 1}, JWT_SECRET);
 
     res.status(200).json({token});
 });
 
 app.post("/room",middleware,  (req, res) => {
-    res.send("Room created!");
+
+    const {success, data} = CreateUserSchema.safeParse(req.body);
+
+    if(!success) {
+        res.status(400).json({error: data, msg: "Invalid input"});
+        return;
+    }
+
+    
+    res.json({msg: "Room created", data});
 });
 
 app.listen(3001, () => {
