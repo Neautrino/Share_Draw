@@ -9,14 +9,14 @@ const app = express();
 app.use(json());
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+    res.send("Hello World!");
 });
 
-app.post("/signup",async (req, res) => {
-    const {success, data} = CreateUserSchema.safeParse(req.body);
-    
-    if(!success) {
-        res.status(400).json({error: data, msg: "Invalid input"});
+app.post("/signup", async (req, res) => {
+    const { success, data } = CreateUserSchema.safeParse(req.body);
+
+    if (!success) {
+        res.status(400).json({ error: data, msg: "Invalid input" });
         return;
     }
 
@@ -27,43 +27,60 @@ app.post("/signup",async (req, res) => {
                 password: data?.password,
                 name: data?.name
             }
-        })
+        });
 
-        res.status(200).json({msg: "User created", userId: user.id}); 
-    } catch (error) {
-        res.status(500).json({error, msg: "Failed to create user"});
-        
+        res.status(200).json({ msg: "User created", userId: user.id });
+    } catch (error: any) {
+        if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+            res.status(409).json({ msg: "User with this email already exists" });
+            return;
+        }
+        res.status(500).json({ error, msg: "Failed to create user" });
     }
 
-    console.log(data);
 });
 
-app.post("/signin", (req, res) => {
-    const {success, data} = SigninSchema.safeParse(req.body);
-    
+app.post("/signin", async (req, res) => {
+    const { success, data } = SigninSchema.safeParse(req.body);
+
     if(!success) {
-        res.status(400).json({error: data, msg: "Invalid input"});
+        res.status(400).json({ error: data, msg: "Invalid input" });
         return;
     }
 
-    const token = jwt.sign({email: data?.email, id: 1}, JWT_SECRET);
+    try {
+        const user = await prismaClient.user.findUnique({ where: { email: data?.email } });
+        if(!user) {
+            res.status(404).json({ msg: "User not found" });
+            return;
+        }
 
-    res.status(200).json({token});
+        if(user.password !== data?.password) {
+            res.status(401).json({ msg: "Invalid password" });
+            return;
+        }
+
+        const token = jwt.sign({ email: user?.email, id: user.id }, JWT_SECRET);
+        res.status(200).json({ msg: "User signed in", userId: user.id, token });
+            
+    } catch (error: any) {
+        res.status(500).json({ msg: "Internal server error" });
+    }
 });
 
-app.post("/room",middleware,  (req, res) => {
+app.post("/room", middleware, (req, res) => {
 
-    const {success, data} = CreateUserSchema.safeParse(req.body);
+    const { success, data } = CreateUserSchema.safeParse(req.body);
 
-    if(!success) {
-        res.status(400).json({error: data, msg: "Invalid input"});
+    if (!success) {
+        res.status(400).json({ error: data, msg: "Invalid input" });
         return;
     }
 
-    
-    res.json({msg: "Room created", data});
+
+    res.json({ msg: "Room created", data });
 });
 
 app.listen(3001, () => {
-  console.log("Server is running on port 3001");
+    console.log("Server is running on port 3001");
 });
