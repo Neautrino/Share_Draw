@@ -11,7 +11,7 @@ interface User {
     rooms: number[];
 }
 
-const users: User[] = [];
+let users: User[] = [];
 
 function checkUser(token: string): string | null {
     try {
@@ -73,27 +73,44 @@ wss.on("connection", (ws, request) => {
         }
 
         if(parsedData.type === "chat") {
-            const roomId = parsedData.roomId;
-            const user = users.find(u => u.userId === userId);
-            const message = parsedData.message;
+           const roomId = parsedData.roomId;
+           const user = users.find(u => u.userId === userId);
+           const message = parsedData.message;
 
-            if(!user) {
-                return;
-            }
+           if(!user) {
+               return;
+           }
 
-            await prismaClient.chat.create({
-                data: {
-                    roomId,
-                    message,
-                    userId
-                }
-            })
+           try {
+               await prismaClient.chat.create({
+                   data: {
+                       roomId,
+                       message,
+                       userId
+                   }
+               });
 
-            users.filter(u => {
-                if(u.rooms.includes(roomId)){
-                    u.ws.send(JSON.stringify({ type: "chat", message }));
-                }
-            });
+               users.forEach(u => {
+                   if(u.rooms.includes(roomId)) {
+                       try {
+                           u.ws.send(JSON.stringify({
+                               type: "chat",
+                               message,
+                               roomId,
+                           }));
+                       } catch (error) {
+                           console.error("Failed to send message to user:", u.userId, error);
+                           users = users.filter(fu => fu.userId !== u.userId);
+                       }
+                   }
+               });
+           } catch (error) {
+               console.error("Error handling chat message:", error);
+               ws.send(JSON.stringify({
+                   type: "error",
+                   message: "Failed to send message"
+               }));
+           }
         }
     });
 });
