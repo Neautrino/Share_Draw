@@ -1,8 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSocket } from "../hooks/useSocket"
-import { Socket } from "dgram";
 
 export default function ChatRoomClient({
     messages,
@@ -16,21 +15,28 @@ export default function ChatRoomClient({
     const [ chats, setChats ] = useState<{ message: string }[]>(messages);
 
     useEffect(() => {
-        if( socket && !loading){
+        if (socket && !loading) {
 
+            console.log("User Connected to Chat Room");
             socket.send(JSON.stringify({
                 type: "join-room",
                 roomId: id
-            }))
+            }));
 
             socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                if(data.type === "chat"){
-                    alert(data.message);
-                    setChats((chats) => [...chats, { message: data.message }]);
+                if (data.type === "chat") {
+                    setChats(c => [...c, { message: data.message }]);
                 }
             }
 
+            return () => {
+                console.log("User Disconnected from Chat Room");
+                socket.send(JSON.stringify({
+                    type: "leave-room",
+                    roomId: id
+                }));
+            }
         }
     }, [socket, loading, id]);
 
@@ -44,17 +50,15 @@ export default function ChatRoomClient({
             
             <input type="text" value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} />
             <button onClick={async () => {
-                if(socket && !loading){
+                if (socket && !loading) {
                     socket.send(JSON.stringify({
                         type: "chat",
                         roomId: id,
                         message: currentMessage
-                    }))
-
+                    }));
                     setCurrentMessage("");
                 }
-            }
-            }>Send</button>
+            }}>Send</button>
         </div>
     )
 }

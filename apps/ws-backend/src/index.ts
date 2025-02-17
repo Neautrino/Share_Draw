@@ -82,13 +82,6 @@ wss.on("connection", (ws, request) => {
            }
 
            try {
-               await prismaClient.chat.create({
-                   data: {
-                       roomId,
-                       message,
-                       userId
-                   }
-               });
 
                users.forEach(u => {
                    if(u.rooms.includes(roomId)) {
@@ -104,6 +97,15 @@ wss.on("connection", (ws, request) => {
                        }
                    }
                });
+
+               
+                await prismaClient.chat.create({
+                     data: {
+                          message,
+                          roomId,
+                          userId
+                     }
+                });
            } catch (error) {
                console.error("Error handling chat message:", error);
                ws.send(JSON.stringify({

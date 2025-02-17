@@ -5,7 +5,7 @@ import ChatRoomClient from "./ChatRoomClient";
 async function getChats(roomId: string) {
     const response = await axios.get(`${BACKEND_URL}/chats/${roomId}`, {
         headers: {
-            Authorization: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNzaW5naDk4OHJAZ21haWwuY29tIiwiaWQiOiI2NWNhNmExMC1mNGQxLTQwYzktOTRjYS0zMTBhZjA5MmEwYjkiLCJpYXQiOjE3MzkwMDgyMDV9.89ip76psmDJxvODqL5GoZne9xVkWmC_geot7wwqMyDs`
+            Authorization: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNob3R1QGdtYWlsLmNvbSIsImlkIjoiN2ZmMGUzYjQtMDg4NS00YTEzLWJkMmEtY2RlMWU0OWQ1YTBmIiwiaWF0IjoxNzM5NzI5NTQzfQ.zbmsC4iYvJMl3J4qznVmNRHV75Bn6qPoCeeQcHuYiTk`
         }
     });
     console.log(response.data.messages);
