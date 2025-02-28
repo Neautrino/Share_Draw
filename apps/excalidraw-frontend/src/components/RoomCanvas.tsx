@@ -28,7 +28,7 @@ function RoomCanvas({roomId}: {roomId: string}) {
 }, [socket, loading, roomId]);
 
   
-  if(loading) return <div>Loading...</div>
+  if(loading || socket==null) return <div>Loading...</div>
 
   return (
    <Canvas roomId={roomId} socket={socket} />

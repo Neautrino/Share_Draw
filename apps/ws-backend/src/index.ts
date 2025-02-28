@@ -49,7 +49,6 @@ wss.on("connection", (ws, request) => {
 
     ws.on("message", async (data) => {
         const parsedData = JSON.parse(data.toString());
-        console.log("Received data:", parsedData);
 
         if(parsedData.type === "join-room") {
             const roomId = Number(parsedData.roomId);

@@ -3,7 +3,7 @@
 import initDraw from '@/draw';
 import React, { useEffect, useRef } from 'react'
 
-function Canvas({roomId, socket}: {roomId: string, socket: WebSocket | null}) {
+function Canvas({roomId, socket}: {roomId: string, socket: WebSocket}) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -22,9 +22,12 @@ function Canvas({roomId, socket}: {roomId: string, socket: WebSocket | null}) {
           <button className="text-black bg-gray-300 px-4 py-2 rounded-lg">
             Rect
           </button>
-          <button className="text-black bg-gray-300 px-4 py-2 rounded-lg">
-            Circle
-          </button>
+        <button className="text-black bg-gray-300 px-4 py-2 rounded-lg">
+          Circle
+        </button>
+        <button className="text-black bg-gray-300 px-4 py-2 rounded-lg">
+          Line
+        </button>
         </div>
       </div>
     </div>
